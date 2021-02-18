@@ -120,7 +120,7 @@ system.dcache = L1Cache()
 system.icache = L1Cache()
 system.l2cache = L2Cache()
 system.l3Dram = L3Cache()
-system.DynamicCache = L4Cache()
+#system.DynamicCache = L4Cache()
 system.membus = SystemXBar()
 system.l2bar = L2XBar()
 

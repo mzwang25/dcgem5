@@ -160,6 +160,14 @@ class L3XBar(CoherentXBar):
     snoop_response_latency = 1
     snoop_filter = SnoopFilter(lookup_latency = 0)
 
+class L4XBar(CoherentXBar):
+    width = 32
+    frontend_latency = 1
+    forward_latency = 0
+    response_latency = 1
+    snoop_response_latency = 1
+    snoop_filter = SnoopFilter(lookup_latency = 0)
+
 # One of the key coherent crossbar instances is the system
 # interconnect, tying together the CPU clusters, GPUs, and any I/O
 # coherent masters, and DRAM controllers.

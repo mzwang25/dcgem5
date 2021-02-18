@@ -132,9 +132,37 @@ EmulationPageTable::lookup(Addr vaddr)
     Addr page_addr = pageAlign(vaddr);
     PTableItr iter = pTable.find(page_addr);
 
-    DPRINTF(MMU, "Looking Up Page: %#x-%#x\n", page_addr);
-    //std::cout << pTable.size() << std::endl;
-    //std::cout << page_addr << std::endl;
+    DPRINTF(MMU, "Looking Up Page: %#x\n", page_addr);
+
+    auto it = pTable_with_capacity.find(page_addr);
+
+    if(it != pTable_with_capacity.end())
+    {
+      it->second = 0;
+      hits++;
+    }
+    else
+    {
+      misses++;
+      pTable_with_capacity.insert(std::pair<Addr,int>(page_addr, 0));
+    }
+    
+    /*
+    std::cout << "Hits: " << hits << " Misses: " << misses << std::endl;
+
+    auto it2 = pTable_with_capacity.begin();
+    for (it=pTable_with_capacity.begin(); it!=pTable_with_capacity.end(); ++it)
+    {
+      it->second += 1;
+      it2 = it;
+    }
+
+
+    if(pTable_with_capacity.size() > 108)
+    {
+      pTable_with_capacity.erase(it2);
+    }
+    */
 
 
     if (iter == pTable.end())

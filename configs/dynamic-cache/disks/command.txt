@@ -1,0 +1,3 @@
+SX91G?ww/o
+sudo mount -o loop,offset=1048576 linux-spec17.img mnt/
+sudo mount -o loop,offset=32256 x86root-parsec.txt mnt/

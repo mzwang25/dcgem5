@@ -1,9 +1,9 @@
 #!/bin/bash
 
-SPECROOTDIR=~/michael/spec2017
-GEM5OPT=~/michael/gem5/build/X86/gem5.opt
-CFG=~/michael/gem5/configs/dynamic-cache/config.py
-OUTDIR=~/michael/gem5/configs/dynamic-cache/RESULTS
+SPECROOTDIR=/home/nanoproj/michael/spec2017
+GEM5OPT=/home/nanoproj/michael/gem5/build/X86/gem5.opt
+CFG=/home/nanoproj/michael/gem5/configs/dynamic-cache/config.py
+OUTDIR=/home/nanoproj/michael/gem5/configs/dynamic-cache/RESULTS
  
 ######################################################################
 
@@ -38,5 +38,6 @@ echo
 
 # Run gem5
 #${GEM5OPT} --debug-flag=MMU --outdir=${OUTDIR}/${ACTUALBENCHNAME} --debug-flags=DynamicCacheCtrl ${CFG} -b ${ACTUALBENCHNAME} -i ${MAXINST} 
-${GEM5OPT} --outdir=${OUTDIR}/${ACTUALBENCHNAME} --debug-flags=DynamicCacheCtrl ${CFG} -b ${ACTUALBENCHNAME} -i ${MAXINST} 
+#${GEM5OPT} --outdir=${OUTDIR}/${ACTUALBENCHNAME} --debug-flags=DynamicCacheCtrl ${CFG} -b ${ACTUALBENCHNAME} -i ${MAXINST} 
+${GEM5OPT} --outdir=${OUTDIR}/${ACTUALBENCHNAME} --debug-flags=DynamicCacheCtrl ${CFG} -f 1000000000 -b ${ACTUALBENCHNAME} -i ${MAXINST}
 

@@ -33,6 +33,12 @@ process = None
 parser = OptionParser()
 parser.add_option("-b", "--benchmark", dest="benchmark", help="name of benchmark")
 parser.add_option("-i", "--maxinst", dest="maxinst", help="max insts", default=3000000)
+parser.add_option("-l", "--l3size", dest="l3size", help="l3size", default="8192kB")
+parser.add_option("-f", "--flush", 
+                   dest="flush", 
+                   help="account flushing penalty", 
+                   action="store_false", 
+                   default=True)
 
 (options, _) = parser.parse_args()
 
@@ -46,7 +52,7 @@ process = getBenchmark(options.benchmark)
 #=================================================================
 # Some Caches
 
-class L1Cache(Cache):
+class L1Cache(NoncoherentCache):
     assoc = 1
     size = '32kB'
     tag_latency = 2
@@ -54,13 +60,12 @@ class L1Cache(Cache):
     response_latency = 2
     mshrs = 4
     tgts_per_mshr = 20
-    clusivity = Param.Clusivity("mostly_excl")
 
     def __init__(self, options=None):
         super(L1Cache, self).__init__()
         pass
 
-class L2Cache(Cache):
+class L2Cache(NoncoherentCache):
     assoc = 1
     size = '64kB'
     tag_latency = 20
@@ -70,19 +75,18 @@ class L2Cache(Cache):
     tgts_per_mshr = 12
     clusivity = Param.Clusivity("mostly_excl")
 
-
     def __init__(self, options=None):
         super(L2Cache, self).__init__()
         pass
  
 
-class L3Cache(Cache):
+class L3Cache(NoncoherentCache):
     assoc = 1
-    size = "256kB"
-    tag_latency = 51
-    data_latency = 51
-    response_latency = 51
-    mshrs = 4
+    size = "128kB"
+    tag_latency = 35
+    data_latency = 35
+    response_latency = 35
+    mshrs = 20
     tgts_per_mshr = 20
     clusivity = Param.Clusivity("mostly_excl")
 
@@ -91,23 +95,27 @@ class L3Cache(Cache):
         super(L3Cache, self).__init__()
         pass
 
-class L4Cache(Cache):
+class L4Cache(NoncoherentCache):
     assoc = 1
-    size = "256kB"
-    tag_latency = 130
-    data_latency = 130
-    response_latency = 130
-    mshrs = 4
+    size = "512kB"
+    tag_latency = 90
+    data_latency = 90
+    response_latency = 90
+    mshrs = 20
     tgts_per_mshr = 20
     clusivity = Param.Clusivity("mostly_excl")
 
-    #will double size and assoc at ticks in list
-    #tags = BaseSetAssoc(addWayAt=[300000000]) 
 
     def __init__(self, options=None):
         super(L4Cache, self).__init__()
         pass
 
+
+class DCXBar(NoncoherentXBar):
+    width = 16 #bytes
+    frontend_latency = 3
+    forward_latency = 4
+    response_latency = 2
 
 #=================================================================
 system = System()
@@ -115,16 +123,16 @@ system.clk_domain = SrcClockDomain()
 system.clk_domain.clock = '1GHz'
 system.clk_domain.voltage_domain = VoltageDomain()
 system.mem_mode = 'timing'
-system.mem_ranges = [AddrRange('8192MB')]
+system.mem_ranges = [AddrRange('512MB')]
 
 system.cpu = TimingSimpleCPU()
+system.dynamic_cache = DynamicCacheCtrl()
 system.dcache = L1Cache()
 system.icache = L1Cache()
 system.l2cache = L2Cache()
-system.l3Dram = L3Cache()
-system.DynamicCache = L4Cache()
-system.membus = SystemXBar()
-system.l2bar = L2XBar()
+system.membus = DCXBar()
+system.l2bar = DCXBar()
+system.l3cache = L3Cache()
 
 # CPU 
 system.cpu.icache_port = system.icache.cpu_side
@@ -134,24 +142,50 @@ system.dcache.mem_side = system.l2bar.slave
 system.icache.mem_side = system.l2bar.slave
 
 system.l2bar.master = system.l2cache.cpu_side
-system.l2cache.mem_side = system.l3Dram.cpu_side
 
-system.l3Dram.mem_side = system.DynamicCache.cpu_side
-
-system.DynamicCache.mem_side = system.membus.slave
-#=================================================================
-# Add a memory delay component to simulated slow PCM
+system.l2cache.mem_side = system.l3cache.cpu_side
 
 #=================================================================
+#Connection to Dynamic Cache Component
+system.dynamic_cache.accountFlush = options.flush
+
+system.l3cache.mem_side = system.dynamic_cache.cpu_side
+
+system.cache_small = L4Cache()
+system.cache_medium = L4Cache()
+system.cache_large = L4Cache()
+
+
+system.dynamic_cache.connectCaches(
+    system.membus, 
+    system.cache_small, 
+    system.cache_medium, 
+    system.cache_large)
+
+system.dynamic_cache.cpu_object = system.cpu
+
+system.mem_delay = SimpleMemDelay(
+  read_req = "170ns",
+  read_resp = "170ns",
+  write_req = "210ns",
+  write_resp = "210ns"
+)
+
+system.mem_delay.slave = system.membus.master
+
+#=================================================================
+# Other system configs
+
 system.cpu.createInterruptController()
 system.cpu.interrupts[0].pio = system.membus.master
 system.cpu.interrupts[0].int_master = system.membus.slave
 system.cpu.interrupts[0].int_slave = system.membus.master
 
+system.mem_ctrl = DDR3_1600_8x8()
+system.mem_ctrl.range = system.mem_ranges[0]
+system.mem_ctrl.port = system.mem_delay.master
 
 system.system_port = system.membus.slave
-system.mem_ctrl = DDR3_1600_8x8()
-system.mem_ctrl.port = system.membus.master
 
 system.cpu.workload = process
 system.cpu.createThreads()

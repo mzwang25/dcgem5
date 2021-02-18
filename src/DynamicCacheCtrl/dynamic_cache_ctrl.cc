@@ -91,9 +91,10 @@ DynamicCacheCtrl::mem_port_to_use(bool& needCacheFlush)
     Counter current_inst = cpu_object -> numSimulatedInsts();
 
     //Right it starts with no cache -> cache -> no cache
-    if(current_inst < 3000000)
+    //if(current_inst < 2000000)
+    if(1)
     {
-        next_state = USING_CACHE;
+        next_state = USING_NONE;
     }
     else
     {
@@ -104,7 +105,7 @@ DynamicCacheCtrl::mem_port_to_use(bool& needCacheFlush)
     if(current_inst > lastStatDump + 1000000) 
     {
         LOG("Dumping Stats");
-        Stats::dump();
+        //Stats::dump();
         lastStatDump += 1000000;
 
     }
@@ -113,6 +114,7 @@ DynamicCacheCtrl::mem_port_to_use(bool& needCacheFlush)
     if(current_state == USING_CACHE && next_state == USING_NONE)
     {
         LOG("Switching from USING_CACHE to USING_NONE");
+        std::cout << "CACHE -> NOCACHE" << std::endl;
         needCacheFlush = true;
         
     }
@@ -120,6 +122,7 @@ DynamicCacheCtrl::mem_port_to_use(bool& needCacheFlush)
     else if(current_state == USING_NONE && next_state == USING_CACHE)
     {
         LOG("Switching from USING_NONE to USING_CACHE");
+        std::cout << "NOCACHE -> CACHE" << std::endl;
     }
 
     current_state = next_state;

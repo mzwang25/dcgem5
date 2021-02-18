@@ -69,6 +69,10 @@ class EmulationPageTable : public Serializable
     const uint64_t _pid;
     const std::string _name;
 
+    std::unordered_map<Addr, int> pTable_with_capacity;
+    int hits;
+    int misses;
+
   public:
 
     EmulationPageTable(
@@ -76,6 +80,8 @@ class EmulationPageTable : public Serializable
             pageSize(_pageSize), offsetMask(mask(floorLog2(_pageSize))),
             _pid(_pid), _name(__name), shared(false)
     {
+        hits = 0;
+        misses = 0;
         assert(isPowerOf2(pageSize));
     }
 

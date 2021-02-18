@@ -83,6 +83,16 @@ class L3Cache(Cache):
     tgts_per_mshr = 24
     write_buffers = 16
 
+class L4Cache(Cache):
+    assoc = 1
+    tag_latency = 32
+    data_latency = 32
+    response_latency = 32
+    mshrs = 32
+    tgts_per_mshr = 24
+    write_buffers = 16
+    tags = BaseSetAssoc(addWayAt=[15000000000, 19000000000], remWayAt=[17000000000])
+
 class IOCache(Cache):
     assoc = 8
     tag_latency = 50

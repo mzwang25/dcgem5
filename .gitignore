@@ -1,3 +1,5 @@
+RESULTS
+*.img
 build
 parser.out
 parsetab.py

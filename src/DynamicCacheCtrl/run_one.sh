@@ -2,21 +2,18 @@
 
 SPECROOTDIR=~/michael/spec2017
 GEM5OPT=~/michael/gem5/build/X86/gem5.opt
-SPEC17CFG=~/michael/gem5/src/DynamicCacheCtrl/config.py
-SIMOPTIONS='--fast-forward=1000000 --at-instruction --maxinsts=500000000 --caches --l2cache'
+CFG=~/michael/gem5/src/DynamicCacheCtrl/config.py
+OUTDIR=~/michael/gem5/src/DynamicCacheCtrl/RESULTS
  
 ######################################################################
 
 BENCHMARK=$1
-OUTDIR=$2
-MAXINST=$3
+MAXINST=$2
 
 #Check proper number of arguments
-if [ ! $# -eq 3 ];
+if [ ! $# -eq 2 ];
 then
-    echo "run_gem5_spec17_benchmarks.sh <BENCHMARK> <OUTDIR> <MAXINST>"
-    echo "! OUTDIR should be a absolute path like ~/michael/outdir"
-    echo "  or the directory will end up in a weird location"
+    echo "run_gem5_spec17_benchmarks.sh <BENCHMARK> <MAXINST>"
     exit 1
 fi
 
@@ -40,5 +37,6 @@ echo
 }
 
 # Run gem5
-${GEM5OPT} --outdir=${OUTDIR} ${SPEC17CFG} -b ${ACTUALBENCHNAME} -i ${MAXINST} 
+#${GEM5OPT} --debug-flag=MMU --outdir=${OUTDIR}/${ACTUALBENCHNAME} --debug-flags=DynamicCacheCtrl ${CFG} -b ${ACTUALBENCHNAME} -i ${MAXINST} 
+${GEM5OPT} --outdir=${OUTDIR}/${ACTUALBENCHNAME} --debug-flags=DynamicCacheCtrl ${CFG} -b ${ACTUALBENCHNAME} -i ${MAXINST} 
 
